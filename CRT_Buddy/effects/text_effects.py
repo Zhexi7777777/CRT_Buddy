@@ -1,237 +1,194 @@
 """
 CRT Buddy - Text Effects
-Y2K风格文字特效生成器
+Y2K style text rendering effects
 """
 from PIL import Image, ImageDraw, ImageFont
 import random
 
 
 class TextEffects:
-    """Y2K风格文字特效"""
+    """Y2K style text effects"""
     
-    @staticmethod
-    def create_gradient_text(text, size=(800, 400), font_size=60):
-        """创建渐变文字图像"""
-        img = Image.new('RGB', size, '#000000')
-        draw = ImageDraw.Draw(img)
+    def apply_effect(self, img, text, style):
+        """Apply specified text effect"""
+        effects = {
+            'gradient': self.gradient_text,
+            'glitch': self.glitch_text,
+            'neon': self.neon_text,
+            'chrome': self.chrome_text,
+            'retro': self.retro_text
+        }
         
-        # 尝试加载字体（使用系统默认）
-        try:
-            font = ImageFont.truetype("arial.ttf", font_size)
-        except:
-            font = ImageFont.load_default()
-        
-        # 获取文字边界框
-        bbox = draw.textbbox((0, 0), text, font=font)
-        text_width = bbox[2] - bbox[0]
-        text_height = bbox[3] - bbox[1]
-        
-        # 居中位置
-        x = (size[0] - text_width) // 2
-        y = (size[1] - text_height) // 2
-        
-        # 创建渐变背景
-        for i in range(size[1]):
-            ratio = i / size[1]
-            r = int(255 * (1 - ratio))
-            g = int(255 * ratio * 0.5)
-            b = int(255 * ratio)
-            draw.line([(0, i), (size[0], i)], fill=(r, g, b))
-        
-        # 绘制文字（带阴影）
-        shadow_offset = 3
-        draw.text((x + shadow_offset, y + shadow_offset), text, 
-                 fill='#000000', font=font)
-        draw.text((x, y), text, fill='#00ffff', font=font)
-        
-        return img
+        effect_func = effects.get(style, self.gradient_text)
+        return effect_func(img, text)
     
-    @staticmethod
-    def create_glitch_text(text, size=(800, 400), font_size=60):
-        """创建故障艺术文字"""
-        img = Image.new('RGB', size, '#000000')
-        draw = ImageDraw.Draw(img)
-        
-        try:
-            font = ImageFont.truetype("arial.ttf", font_size)
-        except:
-            font = ImageFont.load_default()
-        
-        bbox = draw.textbbox((0, 0), text, font=font)
-        text_width = bbox[2] - bbox[0]
-        text_height = bbox[3] - bbox[1]
-        x = (size[0] - text_width) // 2
-        y = (size[1] - text_height) // 2
-        
-        # 绘制RGB分离效果
-        offsets = [(-3, 0, '#ff0000'), (0, 0, '#00ff00'), (3, 0, '#0000ff')]
-        for dx, dy, color in offsets:
-            draw.text((x + dx, y + dy), text, fill=color, font=font)
-        
-        # 添加随机干扰线
-        for _ in range(10):
-            y_line = random.randint(0, size[1])
-            draw.line([(0, y_line), (size[0], y_line)], 
-                     fill=(random.randint(0, 255), random.randint(0, 255), 
-                           random.randint(0, 255)), width=2)
-        
-        return img
-    
-    @staticmethod
-    def create_neon_text(text, size=(800, 400), font_size=60):
-        """创建霓虹灯文字效果"""
-        img = Image.new('RGB', size, '#0a0a0a')
-        draw = ImageDraw.Draw(img)
-        
-        try:
-            font = ImageFont.truetype("arial.ttf", font_size)
-        except:
-            font = ImageFont.load_default()
-        
-        bbox = draw.textbbox((0, 0), text, font=font)
-        text_width = bbox[2] - bbox[0]
-        text_height = bbox[3] - bbox[1]
-        x = (size[0] - text_width) // 2
-        y = (size[1] - text_height) // 2
-        
-        # 绘制多层辉光效果
-        glow_layers = [
-            (12, '#ff00ff', 30),
-            (8, '#ff66ff', 60),
-            (4, '#ffaaff', 120),
-            (0, '#ffffff', 255)
-        ]
-        
-        for offset, color, alpha in glow_layers:
-            # 创建临时图层
-            temp = Image.new('RGBA', size, (0, 0, 0, 0))
-            temp_draw = ImageDraw.Draw(temp)
-            
-            # 解析颜色
-            r = int(color[1:3], 16)
-            g = int(color[3:5], 16)
-            b = int(color[5:7], 16)
-            
-            temp_draw.text((x + offset, y + offset), text, 
-                         fill=(r, g, b, alpha), font=font)
-            
-            img = Image.alpha_composite(img.convert('RGBA'), temp).convert('RGB')
-        
-        return img
-    
-    @staticmethod
-    def create_chrome_text(text, size=(800, 400), font_size=60):
-        """创建金属镀铬文字"""
-        img = Image.new('RGB', size, '#000000')
-        draw = ImageDraw.Draw(img)
-        
-        try:
-            font = ImageFont.truetype("arial.ttf", font_size)
-        except:
-            font = ImageFont.load_default()
-        
-        bbox = draw.textbbox((0, 0), text, font=font)
-        text_width = bbox[2] - bbox[0]
-        text_height = bbox[3] - bbox[1]
-        x = (size[0] - text_width) // 2
-        y = (size[1] - text_height) // 2
-        
-        # 绘制金属效果（多层渐变）
-        layers = [
-            (4, '#666666'),
-            (3, '#999999'),
-            (2, '#cccccc'),
-            (1, '#eeeeee'),
-            (0, '#ffffff')
-        ]
-        
-        for offset, color in layers:
-            draw.text((x, y + offset), text, fill=color, font=font)
-        
-        return img
-    
-    @staticmethod
-    def create_retro_text(text, size=(800, 400), font_size=60):
-        """创建复古Y2K文字（带星星和装饰）"""
-        img = Image.new('RGB', size, '#000033')
-        draw = ImageDraw.Draw(img)
-        
-        try:
-            font = ImageFont.truetype("arial.ttf", font_size)
-        except:
-            font = ImageFont.load_default()
-        
-        # 添加星星背景
-        for _ in range(50):
-            x_star = random.randint(0, size[0])
-            y_star = random.randint(0, size[1])
-            star_size = random.randint(1, 3)
-            color = random.choice(['#ffff00', '#00ffff', '#ff00ff', '#ffffff'])
-            draw.ellipse([x_star, y_star, x_star + star_size, y_star + star_size],
-                        fill=color)
-        
-        bbox = draw.textbbox((0, 0), text, font=font)
-        text_width = bbox[2] - bbox[0]
-        text_height = bbox[3] - bbox[1]
-        x = (size[0] - text_width) // 2
-        y = (size[1] - text_height) // 2
-        
-        # 绘制文字（彩虹效果）
-        colors = ['#ff0000', '#ff7700', '#ffff00', '#00ff00', '#0000ff', '#8800ff']
-        for i, char in enumerate(text):
-            color = colors[i % len(colors)]
-            char_bbox = draw.textbbox((0, 0), char, font=font)
-            char_width = char_bbox[2] - char_bbox[0]
-            
-            # 阴影
-            draw.text((x + 2, y + 2), char, fill='#000000', font=font)
-            # 主文字
-            draw.text((x, y), char, fill=color, font=font)
-            
-            x += char_width
-        
-        return img
-    
-    @staticmethod
-    def add_y2k_decorations(img):
-        """添加Y2K装饰元素（星星、闪光等）"""
+    def gradient_text(self, img, text):
+        """Gradient text effect"""
         draw = ImageDraw.Draw(img)
         width, height = img.size
         
-        # 添加角落装饰
-        decorations = ['?', '?', '??', '?', '?']
-        positions = [
-            (20, 20), (width - 60, 20),
-            (20, height - 40), (width - 60, height - 40)
-        ]
-        
+        # Get font
         try:
-            deco_font = ImageFont.truetype("seguiemj.ttf", 30)
+            font_size = min(width, height) // 8
+            font = ImageFont.truetype("arial.ttf", font_size)
         except:
-            deco_font = ImageFont.load_default()
+            font = ImageFont.load_default()
         
-        for pos in positions:
-            deco = random.choice(decorations)
-            draw.text(pos, deco, fill='#ffff00', font=deco_font)
+        # Get text size
+        bbox = draw.textbbox((0, 0), text, font=font)
+        text_width = bbox[2] - bbox[0]
+        text_height = bbox[3] - bbox[1]
+        
+        # Position
+        x = (width - text_width) // 2
+        y = (height - text_height) // 2
+        
+        # Draw each character with different color
+        colors = [(255, 0, 255), (0, 255, 255), (255, 255, 0), (0, 255, 0)]
+        char_x = x
+        
+        for i, char in enumerate(text):
+            color = colors[i % len(colors)]
+            draw.text((char_x, y), char, fill=color, font=font)
+            char_bbox = draw.textbbox((char_x, y), char, font=font)
+            char_x += char_bbox[2] - char_bbox[0]
         
         return img
     
-    @staticmethod
-    def create_meme_text(text, style='gradient'):
-        """根据风格创建Meme文字"""
-        styles = {
-            'gradient': TextEffects.create_gradient_text,
-            'glitch': TextEffects.create_glitch_text,
-            'neon': TextEffects.create_neon_text,
-            'chrome': TextEffects.create_chrome_text,
-            'retro': TextEffects.create_retro_text
-        }
+    def glitch_text(self, img, text):
+        """Glitch/RGB split text effect"""
+        draw = ImageDraw.Draw(img)
+        width, height = img.size
         
-        creator = styles.get(style, TextEffects.create_gradient_text)
-        img = creator(text)
+        # Get font
+        try:
+            font_size = min(width, height) // 8
+            font = ImageFont.truetype("arial.ttf", font_size)
+        except:
+            font = ImageFont.load_default()
         
-        # 随机添加装饰
-        if random.random() < 0.5:
-            img = TextEffects.add_y2k_decorations(img)
+        # Get text size
+        bbox = draw.textbbox((0, 0), text, font=font)
+        text_width = bbox[2] - bbox[0]
+        text_height = bbox[3] - bbox[1]
+        
+        # Position
+        x = (width - text_width) // 2
+        y = (height - text_height) // 2
+        
+        # Draw RGB layers with offsets
+        offsets = [(0, -3), (3, 0), (-3, 3)]
+        colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255)]
+        
+        for offset, color in zip(offsets, colors):
+            draw.text((x + offset[0], y + offset[1]), text, fill=color, font=font)
+        
+        return img
+    
+    def neon_text(self, img, text):
+        """Neon glow text effect"""
+        draw = ImageDraw.Draw(img)
+        width, height = img.size
+        
+        # Get font
+        try:
+            font_size = min(width, height) // 8
+            font = ImageFont.truetype("arial.ttf", font_size)
+        except:
+            font = ImageFont.load_default()
+        
+        # Get text size
+        bbox = draw.textbbox((0, 0), text, font=font)
+        text_width = bbox[2] - bbox[0]
+        text_height = bbox[3] - bbox[1]
+        
+        # Position
+        x = (width - text_width) // 2
+        y = (height - text_height) // 2
+        
+        # Draw glow layers
+        glow_color = (255, 0, 255)
+        for i in range(10, 0, -2):
+            alpha = int(255 * (i / 10))
+            draw.text((x, y), text, fill=glow_color + (alpha,), font=font)
+        
+        # Draw main text
+        draw.text((x, y), text, fill=(255, 255, 255), font=font)
+        
+        return img
+    
+    def chrome_text(self, img, text):
+        """Chrome/metallic text effect"""
+        draw = ImageDraw.Draw(img)
+        width, height = img.size
+        
+        # Get font
+        try:
+            font_size = min(width, height) // 8
+            font = ImageFont.truetype("arial.ttf", font_size)
+        except:
+            font = ImageFont.load_default()
+        
+        # Get text size
+        bbox = draw.textbbox((0, 0), text, font=font)
+        text_width = bbox[2] - bbox[0]
+        text_height = bbox[3] - bbox[1]
+        
+        # Position
+        x = (width - text_width) // 2
+        y = (height - text_height) // 2
+        
+        # Draw shadow
+        draw.text((x + 5, y + 5), text, fill=(0, 0, 0), font=font)
+        
+        # Draw gradient
+        for i in range(0, text_height, 2):
+            shade = int(128 + 127 * (i / text_height))
+            draw.text((x, y + i), text, fill=(shade, shade, shade + 50), font=font)
+        
+        # Draw highlight
+        draw.text((x - 1, y - 1), text, fill=(255, 255, 255, 100), font=font)
+        
+        return img
+    
+    def retro_text(self, img, text):
+        """Retro rainbow text effect"""
+        draw = ImageDraw.Draw(img)
+        width, height = img.size
+        
+        # Get font
+        try:
+            font_size = min(width, height) // 8
+            font = ImageFont.truetype("arial.ttf", font_size)
+        except:
+            font = ImageFont.load_default()
+        
+        # Get text size
+        bbox = draw.textbbox((0, 0), text, font=font)
+        text_width = bbox[2] - bbox[0]
+        text_height = bbox[3] - bbox[1]
+        
+        # Position
+        x = (width - text_width) // 2
+        y = (height - text_height) // 2
+        
+        # Rainbow colors
+        colors = [
+            (255, 0, 0),    # Red
+            (255, 127, 0),  # Orange
+            (255, 255, 0),  # Yellow
+            (0, 255, 0),    # Green
+            (0, 0, 255),    # Blue
+            (75, 0, 130),   # Indigo
+            (148, 0, 211)   # Violet
+        ]
+        
+        # Draw each character with rainbow colors
+        char_x = x
+        for i, char in enumerate(text):
+            color = colors[i % len(colors)]
+            draw.text((char_x, y), char, fill=color, font=font)
+            char_bbox = draw.textbbox((char_x, y), char, font=font)
+            char_x += char_bbox[2] - char_bbox[0]
         
         return img

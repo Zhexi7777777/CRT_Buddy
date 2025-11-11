@@ -1,262 +1,242 @@
 """
 CRT Buddy - Pet Window
-可拖拽的透明CRT显示器桌面宠物窗口
+Transparent CRT monitor style desktop pet window
 """
 from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QTextEdit, QPushButton, QFileDialog
-from PyQt6.QtCore import Qt, QPoint, QTimer, QPropertyAnimation, QRect, pyqtSignal
-from PyQt6.QtGui import QPainter, QColor, QPen, QPixmap, QImage, QPalette
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QPoint
+from PyQt6.QtGui import QPainter, QColor, QPen, QLinearGradient, QFont
 import random
 
 
 class CRTBuddyWindow(QWidget):
-    """主CRT宠物窗口"""
+    """CRT style desktop pet window"""
     
-    image_dropped = pyqtSignal(str)  # 图片拖放信号
+    # Signals
+    image_dropped = pyqtSignal(str)
     
     def __init__(self):
         super().__init__()
-        self.dragging = False
-        self.offset = QPoint()
-        self.mood = "idle"  # idle, happy, thinking, processing
-        self.scan_line_offset = 0
-        
         self.init_ui()
         self.setup_animations()
         
+        # Drag variables
+        self.dragging = False
+        self.drag_position = QPoint()
+        
+        # Current mood
+        self.current_mood = "idle"
+        
     def init_ui(self):
-        """初始化Y2K风格UI"""
-        # 窗口设置：置顶、无边框、透明背景
-        self.setWindowFlags(
-            Qt.WindowType.FramelessWindowHint |
-            Qt.WindowType.WindowStaysOnTopHint |
-            Qt.WindowType.Tool
-        )
+        """Initialize user interface"""
+        # Window settings
+        self.setWindowTitle("CRT Buddy")
+        self.setGeometry(100, 100, 400, 500)
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        
+        # Enable drag and drop
         self.setAcceptDrops(True)
         
-        # 设置窗口大小
-        self.setFixedSize(350, 450)
-        
-        # 主布局
+        # Main layout
         layout = QVBoxLayout()
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(10)
         
-        # CRT屏幕标题
-        self.title_label = QLabel("? CRT BUDDY ?")
-        self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.title_label.setStyleSheet("""
-            QLabel {
-                color: #00ff00;
-                font-size: 20px;
-                font-weight: bold;
-                font-family: 'Courier New', monospace;
-                text-shadow: 0 0 10px #00ff00;
-                background: transparent;
-                padding: 10px;
-            }
-        """)
-        layout.addWidget(self.title_label)
-        
-        # 状态显示
-        self.status_label = QLabel("? READY TO GENERATE Y2K VIBES ?")
+        # Status label
+        self.status_label = QLabel("CRT BUDDY")
         self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.status_label.setWordWrap(True)
         self.status_label.setStyleSheet("""
             QLabel {
-                color: #ff00ff;
-                font-size: 12px;
+                color: #00FF00;
+                background-color: rgba(0, 0, 0, 180);
+                border: 2px solid #00FF00;
+                border-radius: 5px;
+                padding: 10px;
                 font-family: 'Courier New', monospace;
-                background: transparent;
-                padding: 5px;
+                font-size: 14px;
+                font-weight: bold;
             }
         """)
         layout.addWidget(self.status_label)
         
-        # 输入框
+        # Input text area
         self.input_text = QTextEdit()
-        self.input_text.setPlaceholderText("Type your message or drag an image here...")
+        self.input_text.setPlaceholderText("Enter text for Y2K meme...")
+        self.input_text.setMaximumHeight(80)
         self.input_text.setStyleSheet("""
             QTextEdit {
+                color: #FF00FF;
                 background-color: rgba(0, 0, 0, 180);
-                color: #00ffff;
-                border: 2px solid #00ff00;
+                border: 2px solid #FF00FF;
                 border-radius: 5px;
-                padding: 10px;
-                font-size: 14px;
+                padding: 5px;
                 font-family: 'Courier New', monospace;
-                selection-background-color: #ff00ff;
+                font-size: 12px;
             }
         """)
-        self.input_text.setMaximumHeight(100)
         layout.addWidget(self.input_text)
         
-        # 按钮容器
-        button_layout = QVBoxLayout()
-        button_layout.setSpacing(8)
-        
-        # Generate按钮
-        self.generate_btn = QPushButton("? GENERATE MEME ?")
-        self.generate_btn.setStyleSheet(self.get_button_style("#ff00ff", "#ff66ff"))
-        self.generate_btn.clicked.connect(self.on_generate_clicked)
-        button_layout.addWidget(self.generate_btn)
-        
-        # Upload按钮
-        self.upload_btn = QPushButton("?? UPLOAD IMAGE ??")
-        self.upload_btn.setStyleSheet(self.get_button_style("#00ffff", "#66ffff"))
-        self.upload_btn.clicked.connect(self.on_upload_clicked)
-        button_layout.addWidget(self.upload_btn)
-        
-        # 特效按钮
-        self.effect_btn = QPushButton("? RANDOM Y2K EFFECT ?")
-        self.effect_btn.setStyleSheet(self.get_button_style("#ffff00", "#ffff66"))
-        self.effect_btn.clicked.connect(self.on_effect_clicked)
-        button_layout.addWidget(self.effect_btn)
-        
-        layout.addLayout(button_layout)
-        
-        # 底部信息
-        self.footer_label = QLabel("Drag me anywhere! ? Right-click to close")
-        self.footer_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.footer_label.setStyleSheet("""
-            QLabel {
-                color: #888888;
-                font-size: 10px;
+        # Generate button
+        self.generate_btn = QPushButton("GENERATE MEME")
+        self.generate_btn.setStyleSheet("""
+            QPushButton {
+                color: #00FFFF;
+                background-color: rgba(0, 0, 0, 180);
+                border: 2px solid #00FFFF;
+                border-radius: 5px;
+                padding: 10px;
                 font-family: 'Courier New', monospace;
-                background: transparent;
+                font-size: 12px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: rgba(0, 255, 255, 50);
+            }
+            QPushButton:pressed {
+                background-color: rgba(0, 255, 255, 100);
             }
         """)
-        layout.addWidget(self.footer_label)
+        layout.addWidget(self.generate_btn)
         
-        layout.addStretch()
+        # Upload button
+        self.upload_btn = QPushButton("UPLOAD IMAGE")
+        self.upload_btn.setStyleSheet("""
+            QPushButton {
+                color: #FFFF00;
+                background-color: rgba(0, 0, 0, 180);
+                border: 2px solid #FFFF00;
+                border-radius: 5px;
+                padding: 10px;
+                font-family: 'Courier New', monospace;
+                font-size: 12px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: rgba(255, 255, 0, 50);
+            }
+            QPushButton:pressed {
+                background-color: rgba(255, 255, 0, 100);
+            }
+        """)
+        self.upload_btn.clicked.connect(self.upload_image)
+        layout.addWidget(self.upload_btn)
+        
+        # Random effect button
+        self.effect_btn = QPushButton("RANDOM Y2K EFFECT")
+        self.effect_btn.setStyleSheet("""
+            QPushButton {
+                color: #FF00FF;
+                background-color: rgba(0, 0, 0, 180);
+                border: 2px solid #FF00FF;
+                border-radius: 5px;
+                padding: 10px;
+                font-family: 'Courier New', monospace;
+                font-size: 12px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: rgba(255, 0, 255, 50);
+            }
+            QPushButton:pressed {
+                background-color: rgba(255, 0, 255, 100);
+            }
+        """)
+        layout.addWidget(self.effect_btn)
+        
+        # Mood indicator
+        self.mood_label = QLabel("^_^")
+        self.mood_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.mood_label.setStyleSheet("""
+            QLabel {
+                color: #00FF00;
+                background-color: rgba(0, 0, 0, 180);
+                border: 2px solid #00FF00;
+                border-radius: 5px;
+                padding: 10px;
+                font-family: 'Courier New', monospace;
+                font-size: 24px;
+                font-weight: bold;
+            }
+        """)
+        layout.addWidget(self.mood_label)
+        
         self.setLayout(layout)
         
-    def get_button_style(self, color1, color2):
-        """获取Y2K风格按钮样式"""
-        return f"""
-            QPushButton {{
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                    stop:0 {color1}, stop:1 {color2});
-                color: #000000;
-                border: 2px solid #ffffff;
-                border-radius: 8px;
-                padding: 10px;
-                font-size: 13px;
-                font-weight: bold;
-                font-family: 'Courier New', monospace;
-            }}
-            QPushButton:hover {{
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                    stop:0 {color2}, stop:1 {color1});
-                border: 2px solid {color1};
-            }}
-            QPushButton:pressed {{
-                background: #ffffff;
-                color: {color1};
-            }}
-        """
-    
     def setup_animations(self):
-        """设置动画效果"""
-        # 扫描线动画定时器
-        self.scan_timer = QTimer(self)
-        self.scan_timer.timeout.connect(self.update_scan_lines)
-        self.scan_timer.start(50)  # 50ms更新一次
+        """Setup animations"""
+        # Scanline animation
+        self.scanline_pos = 0
+        self.scanline_timer = QTimer()
+        self.scanline_timer.timeout.connect(self.animate_scanline)
+        self.scanline_timer.start(50)  # 20 FPS
         
-        # 标题闪烁动画
-        self.blink_timer = QTimer(self)
-        self.blink_timer.timeout.connect(self.blink_title)
-        self.blink_timer.start(1000)
-        
-    def update_scan_lines(self):
-        """更新扫描线位置"""
-        self.scan_line_offset = (self.scan_line_offset + 2) % self.height()
+    def animate_scanline(self):
+        """Animate scanline effect"""
+        self.scanline_pos = (self.scanline_pos + 2) % self.height()
         self.update()
         
-    def blink_title(self):
-        """标题闪烁效果"""
-        colors = ["#00ff00", "#ff00ff", "#00ffff", "#ffff00"]
-        color = random.choice(colors)
-        self.title_label.setStyleSheet(f"""
-            QLabel {{
-                color: {color};
-                font-size: 20px;
-                font-weight: bold;
-                font-family: 'Courier New', monospace;
-                text-shadow: 0 0 10px {color};
-                background: transparent;
-                padding: 10px;
-            }}
-        """)
-    
     def paintEvent(self, event):
-        """绘制CRT效果"""
+        """Custom paint event for CRT effect"""
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         
-        # 绘制CRT外壳（深灰色圆角矩形）
-        painter.setBrush(QColor(30, 30, 35, 240))
-        painter.setPen(QPen(QColor(100, 100, 110), 3))
-        painter.drawRoundedRect(0, 0, self.width(), self.height(), 15, 15)
+        # Draw background with CRT curvature effect
+        painter.setBrush(QColor(0, 0, 0, 200))
+        painter.setPen(QPen(QColor(0, 255, 0), 3))
+        painter.drawRoundedRect(10, 10, self.width() - 20, self.height() - 20, 15, 15)
         
-        # 绘制内屏幕边框
-        painter.setPen(QPen(QColor(0, 255, 0, 100), 2))
-        painter.drawRoundedRect(10, 10, self.width()-20, self.height()-20, 10, 10)
-        
-        # 绘制扫描线效果
+        # Draw scanlines
         painter.setPen(QPen(QColor(0, 255, 0, 30), 1))
-        for i in range(0, self.height(), 4):
-            y = (i + self.scan_line_offset) % self.height()
-            painter.drawLine(0, y, self.width(), y)
+        for y in range(0, self.height(), 4):
+            painter.drawLine(10, y, self.width() - 10, y)
         
-        # 绘制随机静态噪点（模拟CRT）
-        if random.random() < 0.1:
-            for _ in range(20):
-                x = random.randint(0, self.width())
-                y = random.randint(0, self.height())
-                painter.setPen(QColor(255, 255, 255, random.randint(50, 150)))
-                painter.drawPoint(x, y)
+        # Draw moving scanline
+        gradient = QLinearGradient(0, self.scanline_pos - 20, 0, self.scanline_pos + 20)
+        gradient.setColorAt(0, QColor(0, 255, 0, 0))
+        gradient.setColorAt(0.5, QColor(0, 255, 0, 80))
+        gradient.setColorAt(1, QColor(0, 255, 0, 0))
+        painter.fillRect(10, self.scanline_pos - 20, self.width() - 20, 40, gradient)
+        
+        # Draw static noise
+        for _ in range(50):
+            x = random.randint(10, self.width() - 10)
+            y = random.randint(10, self.height() - 10)
+            painter.setPen(QPen(QColor(255, 255, 255, random.randint(50, 150)), 1))
+            painter.drawPoint(x, y)
     
-    # 拖拽功能
     def mousePressEvent(self, event):
+        """Handle mouse press for dragging"""
         if event.button() == Qt.MouseButton.LeftButton:
             self.dragging = True
-            self.offset = event.pos()
+            self.drag_position = event.globalPosition().toPoint() - self.frameGeometry().topLeft()
         elif event.button() == Qt.MouseButton.RightButton:
             self.close()
     
     def mouseMoveEvent(self, event):
+        """Handle mouse move for dragging"""
         if self.dragging:
-            self.move(self.pos() + event.pos() - self.offset)
+            self.move(event.globalPosition().toPoint() - self.drag_position)
     
     def mouseReleaseEvent(self, event):
+        """Handle mouse release"""
         if event.button() == Qt.MouseButton.LeftButton:
             self.dragging = False
     
-    # 拖放功能
     def dragEnterEvent(self, event):
+        """Handle drag enter event"""
         if event.mimeData().hasUrls():
             event.acceptProposedAction()
-            self.set_mood("happy")
     
     def dropEvent(self, event):
-        files = [u.toLocalFile() for u in event.mimeData().urls()]
-        for file in files:
-            if file.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
-                self.image_dropped.emit(file)
-                self.set_status(f"? Image loaded: {file.split('/')[-1]}")
-                break
+        """Handle drop event"""
+        urls = event.mimeData().urls()
+        if urls:
+            file_path = urls[0].toLocalFile()
+            if file_path.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
+                self.image_dropped.emit(file_path)
     
-    # 按钮事件
-    def on_generate_clicked(self):
-        text = self.input_text.toPlainText().strip()
-        if text:
-            self.set_mood("processing")
-            self.set_status("? GENERATING Y2K MEME...")
-        else:
-            self.set_status("? Please enter some text first!")
-    
-    def on_upload_clicked(self):
+    def upload_image(self):
+        """Upload image via file dialog"""
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             "Select Image",
@@ -265,41 +245,39 @@ class CRTBuddyWindow(QWidget):
         )
         if file_path:
             self.image_dropped.emit(file_path)
-            self.set_status(f"? Image loaded: {file_path.split('/')[-1]}")
     
-    def on_effect_clicked(self):
-        effects = [
-            "? HOLOGRAPHIC GLITCH",
-            "?? RAINBOW CHROME",
-            "? VHS DISTORTION",
-            "?? CD-ROM REFLECTION",
-            "?? LASER GRID"
-        ]
-        effect = random.choice(effects)
-        self.set_status(f"Applying: {effect}")
-        self.set_mood("processing")
+    def set_status(self, text):
+        """Set status text"""
+        self.status_label.setText(text)
     
-    # 辅助方法
     def set_mood(self, mood):
-        """设置宠物心情"""
-        self.mood = mood
+        """Set mood"""
+        self.current_mood = mood
         moods = {
-            "idle": "?",
-            "happy": "?",
-            "thinking": "?",
-            "processing": "?"
+            "idle": ("^_^", "#00FF00"),
+            "happy": ("(^o^)", "#00FFFF"),
+            "processing": ("@_@", "#FFFF00"),
+            "error": ("x_x", "#FF0000")
         }
-        icon = moods.get(mood, "?")
-        self.title_label.setText(f"{icon} CRT BUDDY {icon}")
+        face, color = moods.get(mood, ("^_^", "#00FF00"))
+        self.mood_label.setText(face)
+        self.mood_label.setStyleSheet(f"""
+            QLabel {{
+                color: {color};
+                background-color: rgba(0, 0, 0, 180);
+                border: 2px solid {color};
+                border-radius: 5px;
+                padding: 10px;
+                font-family: 'Courier New', monospace;
+                font-size: 24px;
+                font-weight: bold;
+            }}
+        """)
     
-    def set_status(self, message):
-        """设置状态消息"""
-        self.status_label.setText(message)
-        
     def get_input_text(self):
-        """获取输入文本"""
+        """Get input text"""
         return self.input_text.toPlainText()
     
     def clear_input(self):
-        """清空输入"""
+        """Clear input text"""
         self.input_text.clear()
