@@ -4,16 +4,9 @@ Y2K Desktop Pet and Meme Generator
 """
 import sys
 import os
-
-# PyInstaller-compatible imports
-import PyQt6.QtWidgets
-import PyQt6.QtCore
-import PyQt6.QtGui
-
 from PyQt6.QtWidgets import QApplication, QMessageBox
 from PyQt6.QtCore import QTimer
 from PyQt6.QtGui import QIcon
-
 from core.pet_window import CRTBuddyWindow
 from generators.meme_engine import MemeEngine
 

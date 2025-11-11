@@ -11,6 +11,7 @@
     <OutputPath>.</OutputPath>
     <Name>CRT_Buddy</Name>
     <RootNamespace>CRT_Buddy</RootNamespace>
+    <InterpreterId>MSBuild|env|$(MSBuildProjectFullPath)</InterpreterId>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -21,7 +22,57 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="core\pet_window.py" />
+    <Compile Include="core\pet_window_v5.py" />
     <Compile Include="CRT_Buddy.py" />
+    <Compile Include="effects\text_effects.py" />
+    <Compile Include="effects\y2k_styles.py" />
+    <Compile Include="generators\meme_engine.py" />
+    <Compile Include="pyqt6_runtime_hook.py" />
+    <Compile Include="test_pyqt.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Interpreter Include="env\">
+      <Id>env</Id>
+      <Version>3.13</Version>
+      <Description>env (Python 3.13)</Description>
+      <InterpreterPath>Scripts\python.exe</InterpreterPath>
+      <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
+      <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>
+      <Architecture>X64</Architecture>
+    </Interpreter>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="ALL_DONE.md" />
+    <Content Include="auto_install.bat" />
+    <Content Include="BUILD_SUCCESS_FINAL.md" />
+    <Content Include="CRT_Buddy_complete.spec" />
+    <Content Include="CRT_Buddy_fixed.spec" />
+    <Content Include="DESIGN_VISUAL_GUIDE.md" />
+    <Content Include="DISTRIBUTION_GUIDE.md" />
+    <Content Include="ENCODING_FIX_COMPLETE.md" />
+    <Content Include="FINAL_BUILD_SUCCESS.md" />
+    <Content Include="FINAL_COMPLETE.md" />
+    <Content Include="FINAL_SUCCESS.md" />
+    <Content Include="INSTALL_FIX.md" />
+    <Content Include="launch_v2.bat" />
+    <Content Include="PROJECT_COMPLETE.md" />
+    <Content Include="QUICK_FIX.md" />
+    <Content Include="quick_test.bat" />
+    <Content Include="READ_ME_FIRST.txt" />
+    <Content Include="rebuild_exe.bat" />
+    <Content Include="RELEASE_README.md" />
+    <Content Include="START_TESTING.md" />
+    <Content Include="test_exe.bat" />
+    <Content Include="test_run.bat" />
+    <Content Include="ULTIMATE_BUILD_SUCCESS.md" />
+    <Content Include="V2_COMPLETE.md" />
+    <Content Include="V2_UPGRADE.md" />
+    <Content Include="V3_HANDHELD.md" />
+    <Content Include="V4_FINAL.md" />
+    <Content Include="V5.1_PIXEL_FONT.md" />
+    <Content Include="V5.2_RICH_EXPRESSIONS.md" />
+    <Content Include="V5_HORIZONTAL.md" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
