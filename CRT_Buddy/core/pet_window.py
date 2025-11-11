@@ -8,6 +8,7 @@ from PyQt6.QtGui import QPainter, QColor, QPen, QLinearGradient, QFont, QBrush, 
 import random
 import math
 import os
+import sys
 
 
 class CRTBuddyWindow(QWidget):
@@ -37,27 +38,39 @@ class CRTBuddyWindow(QWidget):
         self.is_blinking = False
     
     def load_pixel_font(self):
-        """Load DinkieBitmap pixel font"""
+        """Load DinkieBitmap pixel font - MUST succeed"""
+        # Get base path (works for both script and exe)
+        if getattr(sys, 'frozen', False):
+            # Running as EXE
+            base_path = sys._MEIPASS
+        else:
+            # Running as script
+            base_path = os.path.dirname(__file__)
+        
         # Try multiple possible paths
         font_paths = [
-            "DinkieBitmap-v1.5.0-KeDingKeMao/ttf/DinkieBitmap-9px.ttf",
+            os.path.join(base_path, "DinkieBitmap-v1.5.0-KeDingKeMao", "ttf", "DinkieBitmap-9px.ttf"),
+            os.path.join(base_path, "..", "..", "DinkieBitmap-v1.5.0-KeDingKeMao", "ttf", "DinkieBitmap-9px.ttf"),
             "../DinkieBitmap-v1.5.0-KeDingKeMao/ttf/DinkieBitmap-9px.ttf",
-            os.path.join(os.path.dirname(__file__), "..", "..", "DinkieBitmap-v1.5.0-KeDingKeMao", "ttf", "DinkieBitmap-9px.ttf")
+            "DinkieBitmap-v1.5.0-KeDingKeMao/ttf/DinkieBitmap-9px.ttf"
         ]
         
         for font_path in font_paths:
-            if os.path.exists(font_path):
-                font_id = QFontDatabase.addApplicationFont(font_path)
+            abs_path = os.path.abspath(font_path)
+            if os.path.exists(abs_path):
+                font_id = QFontDatabase.addApplicationFont(abs_path)
                 if font_id != -1:
                     font_families = QFontDatabase.applicationFontFamilies(font_id)
                     if font_families:
                         self.pixel_font_family = font_families[0]
-                        print(f"Loaded pixel font: {self.pixel_font_family} from {font_path}")
+                        print(f"? Loaded pixel font: {self.pixel_font_family} from {abs_path}")
                         return
         
-        # Fallback to system monospace font
-        self.pixel_font_family = "Courier New"
-        print("Using fallback font: Courier New")
+        # FORCE pixel font - no fallback!
+        self.pixel_font_family = "DinkieBitmap 9px"
+        print("? WARNING: Pixel font file not found! Using font name anyway.")
+        print(f"? Searched paths: {font_paths}")
+        print("? If you see wrong fonts, check DinkieBitmap-v1.5.0-KeDingKeMao/ttf/ folder!")
         
     def init_ui(self):
         """Initialize user interface - Y2K desktop PC style"""
