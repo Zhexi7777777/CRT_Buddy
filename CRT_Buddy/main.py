@@ -1,13 +1,13 @@
 """
-CRT Buddy - Main Application
-Y2K Desktop Pet and Meme Generator
+CRT Buddy - Main Application v6.0
+Y2K Desktop Pet and Meme Generator with Input Visualization
 """
 import sys
 import os
 from PyQt6.QtWidgets import QApplication, QMessageBox
 from PyQt6.QtCore import QTimer
 from PyQt6.QtGui import QIcon
-from core.pet_window import CRTBuddyWindow
+from core.pet_window_v6 import CRTBuddyWindow
 from generators.meme_engine import MemeEngine
 
 
