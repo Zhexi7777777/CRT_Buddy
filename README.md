@@ -1,3 +1,88 @@
+# CRT Buddy
+
+CRT Buddy is a retro-inspired desktop mascot and meme generator, designed to bring Y2K vibes and playful interactivity to your computer. Featuring pixel fonts, animated effects, and a customizable mascot, CRT Buddy is both a productivity companion and a creative tool for meme generation.
+
+## Features
+
+- **Desktop Mascot**: A cute, animated mascot that reacts to your actions and keeps you company.
+- **Meme Generator**: Easily create Y2K-style memes with custom text and images.
+- **Input Visualization**: Real-time keystroke tracking and visualization, including stats and history.
+- **Retro UI**: Uses DinkieBitmap pixel fonts and CRT-style effects for an authentic old-school look.
+- **Customizable Effects**: Includes Y2K text effects, particle animations, and more.
+- **Cross-Platform**: Runs on Windows, macOS, and Linux (Python 3.8+).
+
+## Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Seeglo0052/CRT_Buddy.git
+   cd CRT_Buddy
+   ```
+2. **Set up Python environment (recommended):**
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   ```
+3. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+   If you encounter issues with Pillow or PyQt6, ensure you have the latest pip and wheel:
+   ```bash
+   pip install --upgrade pip wheel
+   ```
+4. **Run the application:**
+   ```bash
+   cd CRT_Buddy
+   python main.py
+   ```
+
+## Usage
+
+- **Mascot Window**: The mascot appears on your desktop. You can drag it, interact with it, and watch it react to your keystrokes.
+- **Meme Generation**: Use the meme generator to create custom memes. Access via the main window or run `generators/meme_engine.py` directly.
+- **Input Visualization**: Keystrokes are tracked and visualized in real time. Stats and history are displayed in the mascot window.
+- **Customization**: Fonts, effects, and mascot behavior can be customized via `config.ini` and the core/effects modules.
+
+## File Structure
+
+- `CRT_Buddy/`
+  - `main.py`: Main entry point for the application.
+  - `core/pet_window.py`, `core/pet_window_v5.py`, `core/pet_window_v6.py`: Mascot window implementations (v6 includes input visualization).
+  - `generators/meme_engine.py`: Meme generation engine.
+  - `effects/`: Visual effects and styles (Y2K, text effects).
+  - `DinkieBitmap-v1.5.0-KeDingKeMao/`: Pixel font files (ttf, woff2).
+  - `requirements.txt`: Python dependencies.
+  - `config.ini`: Configuration file for customization.
+
+## Dependencies
+
+- Python 3.8+
+- PyQt6
+- Pillow
+- numpy
+- opencv-python
+- pygame
+- requests
+
+## Troubleshooting
+
+- **Import Errors**: Ensure you are running from the correct directory and the virtual environment is activated.
+- **Pillow Build Issues**: Upgrade pip and wheel, and ensure you have the necessary build tools (e.g., Xcode Command Line Tools on macOS).
+- **Font Not Displaying**: Check that the DinkieBitmap font files are present in the correct directory.
+
+## License
+
+CRT Buddy is released under the MIT License. See `LICENSE` for details.
+
+## Credits
+
+- DinkieBitmap font by KeDingKeMao
+- PyQt6, Pillow, numpy, opencv-python, pygame, requests
+
+## Contact
+
+For questions, suggestions, or contributions, please open an issue or contact the maintainer via GitHub.
 # 🎮 CRT Buddy
 
 <div align="center">
