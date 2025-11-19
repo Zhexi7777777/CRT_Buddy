@@ -5,3 +5,4 @@ opencv-python==4.9.0.80
 pygame==2.5.2
 pywin32==306
 requests==2.31.0
+openai==1.51.0

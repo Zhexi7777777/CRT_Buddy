@@ -2,7 +2,7 @@
 CRT Buddy - Pet Window v6.0
 Y2K Desktop PC style with INPUT VISUALIZATION and keystroke tracking
 """
-from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QTextEdit, QPushButton, QFileDialog
+from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QTextEdit, QPushButton, QFileDialog, QDialog, QTabWidget
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QPoint, QRect
 from PyQt6.QtGui import QPainter, QColor, QPen, QLinearGradient, QFont, QBrush, QPainterPath, QRadialGradient, QCursor, QFontDatabase, QKeyEvent
 import random
@@ -11,6 +11,12 @@ import os
 import sys
 from collections import deque
 from datetime import datetime
+try:
+    # Lazy import AI widgets; optional
+    from ai.widgets import AIChatWidget, AIImageWidget, TypingGameWidget, AISettingsWidget
+    _AI_AVAILABLE = True
+except Exception:
+    _AI_AVAILABLE = False
 
 
 class CRTBuddyWindow(QWidget):
@@ -95,28 +101,28 @@ class CRTBuddyWindow(QWidget):
         self.setGeometry(100, 100, 520, 320)  # Wider and taller
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        
+
         # Enable drag and drop
         self.setAcceptDrops(True)
-        
+
         # Main horizontal layout
         main_layout = QHBoxLayout()
         main_layout.setContentsMargins(12, 12, 12, 12)
         main_layout.setSpacing(8)
-        
+
         # Left side - CRT Screen with mascot
         left_widget = QWidget()
         left_widget.setFixedWidth(240)
         left_layout = QVBoxLayout(left_widget)
         left_layout.setContentsMargins(0, 0, 0, 0)
         left_layout.setSpacing(0)
-        
+
         main_layout.addWidget(left_widget)
-        
+
         # Right side - Controls
         right_layout = QVBoxLayout()
         right_layout.setSpacing(5)
-        
+
         # Status display
         self.status_label = QLabel("CRT BUDDY v6.0 - INPUT VISUALIZER")
         self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -132,7 +138,7 @@ class CRTBuddyWindow(QWidget):
             }}
         """)
         right_layout.addWidget(self.status_label)
-        
+
         # Input statistics display
         self.stats_label = QLabel("KEYS: 0 | SPEED: 0 CPM")
         self.stats_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -148,7 +154,7 @@ class CRTBuddyWindow(QWidget):
             }}
         """)
         right_layout.addWidget(self.stats_label)
-        
+
         # Input area with custom event handling
         self.input_text = KeystrokeTextEdit(self)
         self.input_text.setPlaceholderText("Type here... watch the magic!")
@@ -165,40 +171,65 @@ class CRTBuddyWindow(QWidget):
             }}
         """)
         right_layout.addWidget(self.input_text)
-        
+
         # Buttons
         self.generate_btn = QPushButton("GENERATE")
         self.generate_btn.setMinimumHeight(30)
         self.generate_btn.setStyleSheet(self.get_bar_button_style("#FF0080", "#FF66B3"))
         right_layout.addWidget(self.generate_btn)
-        
+
         self.upload_btn = QPushButton("IMAGE")
         self.upload_btn.setMinimumHeight(30)
         self.upload_btn.setStyleSheet(self.get_bar_button_style("#00CCFF", "#66E0FF"))
         self.upload_btn.clicked.connect(self.upload_image)
         right_layout.addWidget(self.upload_btn)
-        
+
         self.effect_btn = QPushButton("RANDOM")
         self.effect_btn.setMinimumHeight(30)
         self.effect_btn.setStyleSheet(self.get_bar_button_style("#FFD700", "#FFE766"))
         right_layout.addWidget(self.effect_btn)
-        
+
+        # AI Hub button
+        self.ai_btn = QPushButton("AI HUB")
+        self.ai_btn.setMinimumHeight(30)
+        self.ai_btn.setStyleSheet(self.get_bar_button_style("#66FF66", "#99FF99"))
+        self.ai_btn.setEnabled(_AI_AVAILABLE)
+        self.ai_btn.setToolTip("Open AI Chat / Image / Typing Game" if _AI_AVAILABLE else "AI modules not available")
+        self.ai_btn.clicked.connect(self.open_ai_hub)
+        right_layout.addWidget(self.ai_btn)
+
         right_layout.addStretch()
-        
+
         # Close button
         close_container = QHBoxLayout()
         close_container.addStretch()
-        
+
         self.close_btn = QPushButton("X")
         self.close_btn.setFixedSize(45, 45)
         self.close_btn.setStyleSheet(self.get_round_button_style())
         self.close_btn.clicked.connect(self.close)
         close_container.addWidget(self.close_btn)
-        
+
         right_layout.addLayout(close_container)
-        
+
         main_layout.addLayout(right_layout)
         self.setLayout(main_layout)
+
+    def open_ai_hub(self):
+        if not _AI_AVAILABLE:
+            self.set_status("AI modules not available. Check requirements.")
+            return
+        dlg = QDialog(self)
+        dlg.setWindowTitle("CRT Buddy - AI Hub")
+        tabs = QTabWidget(dlg)
+        tabs.addTab(AIChatWidget(), "Chat")
+        tabs.addTab(AIImageWidget(), "Image")
+        tabs.addTab(TypingGameWidget(), "Typing Game")
+        tabs.addTab(AISettingsWidget(), "Settings")
+        lay = QVBoxLayout(dlg)
+        lay.addWidget(tabs)
+        dlg.resize(720, 520)
+        dlg.exec()
         
     def get_bar_button_style(self, color1, color2):
         """Get long bar metallic button style"""

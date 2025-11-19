@@ -10,6 +10,7 @@ CRT Buddy is a retro-inspired desktop mascot and meme generator, designed to bri
 - **Retro UI**: Uses DinkieBitmap pixel fonts and CRT-style effects for an authentic old-school look.
 - **Customizable Effects**: Includes Y2K text effects, particle animations, and more.
 - **Cross-Platform**: Runs on Windows, macOS, and Linux (Python 3.8+).
+ - **AI Hub**: Built-in AI chat, image generation, and a typing game using an OpenAI-compatible API.
 
 ## Installation
 
@@ -36,6 +37,22 @@ CRT Buddy is a retro-inspired desktop mascot and meme generator, designed to bri
    cd CRT_Buddy
    python main.py
    ```
+
+### Optional: Enable AI features
+
+Set your API credentials via environment variables or `CRT_Buddy/config.ini` under the `[AI]` section.
+
+- Environment variables:
+   - `OPENAI_API_KEY` (or `AI_API_KEY`)
+   - `OPENAI_BASE_URL` (or `AI_BASE_URL`) for OpenAI-compatible servers
+
+- Config file (`CRT_Buddy/config.ini`):
+   - `api_key = your_key`
+   - `base_url = https://api.openai.com/v1` (or your server)
+   - `chat_model = gpt-4o-mini`
+   - `image_model = gpt-image-1`
+
+In the app, click AI HUB to access Chat, Image, and Typing Game.
 
 ## Usage
 
